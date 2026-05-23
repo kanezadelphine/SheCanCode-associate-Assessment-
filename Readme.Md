@@ -66,7 +66,7 @@ This project solves that problem by implementing an **Idempotency Gateway** that
 ## Project Structure
 
 ```bash
-shecancode-associate-assessment/
+shecancode-associate-assessment-/
 │
 ├── gateway/
 │   ├── __init__.py
@@ -221,7 +221,7 @@ Audit logging helps with:
 ```bash
 git clone https://github.com/kanezadelphine/SheCanCode-associate-Assessment-.git
 
-cd idempotency-gateway
+cd SHECANCODE-ASSOCIATE-ASSESSMENT-
 ```
 
 ---
