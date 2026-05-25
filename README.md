@@ -1,26 +1,25 @@
-# Idempotency Gateway API — The "Pay-Once" Protocol
+# 🚀 Idempotency Gateway API — The “Pay-Once” Protocol
 
-A backend payment-processing API built with Django REST Framework that prevents duplicate payment processing using **idempotency keys**.
+A backend payment-processing API built with **Spring Boot** that prevents duplicate payment processing using **idempotency keys**.
 
-This project simulates a fintech payment gateway where clients may retry requests due to network failures or timeouts. The API guarantees that the same payment request is processed **exactly once**, even if the client retries multiple times.
-
----
-
-## Features
-
-- Prevents duplicate payment processing
-- Supports `Idempotency-Key` request headers
-- Returns cached responses for duplicate requests
-- Detects fraudulent reuse of keys with different payloads
-- Handles concurrent/in-flight requests safely
-- Includes request audit logging
-- Stores processing duration and client IP
-- Built with Django REST Framework
-- SQLite database integration
+This project simulates a fintech payment gateway where clients may retry requests because of network failures or timeouts. The API guarantees that the same payment request is processed **exactly once**, even if the client retries multiple times.
 
 ---
 
-## System Architecture
+## ✨ Features
+
+✅ Prevents duplicate payment processing  
+✅ Supports `Idempotency-Key` request headers  
+✅ Returns cached responses for duplicate requests  
+✅ Detects reuse of keys with different payloads  
+✅ Handles concurrent/in-flight requests safely  
+✅ Uses Spring Boot REST API architecture  
+✅ SQLite database integration with JPA/Hibernate  
+✅ Built with Java 17 and Maven  
+
+---
+
+## 🏗️ System Architecture
 
 <p align="center">
   <img src="docs/architecture.png" width="900">
@@ -32,7 +31,7 @@ This project simulates a fintech payment gateway where clients may retry request
 
 ---
 
-## Problem Statement
+## ❗ Problem Statement
 
 In real-world fintech systems, payment requests can be retried automatically when a client experiences:
 
@@ -51,58 +50,71 @@ This project solves that problem by implementing an **Idempotency Gateway** that
 
 ---
 
-## Tech Stack
+## 🛠️ Tech Stack
 
 | Technology | Purpose |
 |---|---|
-| Python 3 | Backend language |
-| Django | Web framework |
-| Django REST Framework | REST API development |
+| Java 17 | Backend language |
+| Spring Boot | Backend framework |
+| Spring Web | REST API development |
+| Spring Data JPA | Database access |
+| Hibernate | ORM |
 | SQLite | Database |
+| Maven | Dependency management |
 | JSON | API communication |
 
 ---
 
-## Project Structure
+## 📁 Project Structure
 
 ```bash
-shecancode-associate-assessment-/
+SHECANCODE-ASSOCIATE-ASSESSMENT-/
 │
-├── gateway/
-│   ├── __init__.py
-│   ├── asgi.py
-│   ├── settings.py
-│   ├── urls.py
-│   └── wsgi.py
-│
-├── payments/
-│   ├── migrations/
-│   ├── __init__.py
-│   ├── models.py
-│   ├── serializers.py
-│   ├── urls.py
-│   └── views.py
+├── src/
+│   ├── main/
+│   │   ├── java/com/igire/gateway/
+│   │   │   ├── controller/
+│   │   │   │   └── PaymentController.java
+│   │   │   │
+│   │   │   ├── model/
+│   │   │   │   ├── CachedPayment.java
+│   │   │   │   ├── PaymentRequest.java
+│   │   │   │   └── PaymentResponse.java
+│   │   │   │
+│   │   │   ├── repository/
+│   │   │   │   └── PaymentRepository.java
+│   │   │   │
+│   │   │   ├── service/
+│   │   │   │   └── PaymentService.java
+│   │   │   │
+│   │   │   └── IdempotencyGatewayApplication.java
+│   │   │
+│   │   └── resources/
+│   │       └── application.properties
+│   │
+│   └── test/
 │
 ├── docs/
 │   └── architecture.png
 │
+├── payments.db
+├── pom.xml
+├── mvnw
+├── mvnw.cmd
 ├── .gitignore
-├── db.sqlite3
-├── manage.py
-├── README.md
-└── requirements.txt
+└── README.md
 ```
 
 ---
 
-# API Endpoint
+## 🔌 API Endpoint
 
-## Process Payment
+### Process Payment
 
 ### Request
 
 ```http
-POST /api/process-payment
+POST /process-payment
 ```
 
 ### Headers
@@ -116,17 +128,17 @@ Idempotency-Key: payment-001
 ```json
 {
     "amount": 100,
-    "currency": "GHS"
+    "currency": "USD"
 }
 ```
 
 ---
 
-## Successful Response
+## ✅ Successful Response
 
 ```json
 {
-    "message": "Charged 100 GHS"
+    "message": "Charged 100 USD"
 }
 ```
 
@@ -138,13 +150,13 @@ Idempotency-Key: payment-001
 
 ---
 
-## Duplicate Request Response
+## ♻️ Duplicate Request Response
 
 If the same request is sent again using the same `Idempotency-Key` and same body:
 
 ```json
 {
-    "message": "Charged 100 GHS"
+    "message": "Charged 100 USD"
 }
 ```
 
@@ -158,13 +170,13 @@ This indicates the request was replayed safely from cache without reprocessing p
 
 ---
 
-## Fraud Protection
+## 🚨 Fraud Protection
 
 If a client reuses the same `Idempotency-Key` with a different request body:
 
 ```json
 {
-    "error": "Idempotency key already used for a different request body."
+    "message": "Idempotency key already used for a different request body."
 }
 ```
 
@@ -176,47 +188,24 @@ If a client reuses the same `Idempotency-Key` with a different request body:
 
 ---
 
-# In-Flight Request Handling
+## 🔄 In-Flight Request Handling
 
 This project safely handles concurrent requests.
 
 If two identical requests arrive simultaneously:
 
-1. The first request processes normally
-2. The second request waits
-3. The payment is processed only once
-4. Both requests receive the same response
+1. The first request processes normally  
+2. The second request waits  
+3. The payment is processed only once  
+4. Both requests receive the same response  
 
 This prevents race conditions and duplicate charges.
 
 ---
 
-# Audit Logging & Request Tracking
+## ⚙️ Setup Instructions
 
-An additional fintech-focused safety feature was implemented to improve traceability and monitoring.
-
-The system stores:
-
-- Client IP address
-- Request timestamp
-- Processing duration
-- Request status
-
-### Why This Matters
-
-Audit logging helps with:
-
-- Fraud investigations
-- Debugging production issues
-- Compliance and regulatory requirements
-- Security monitoring
-- Transaction traceability
-
----
-
-# Setup Instructions
-
-## Clone Repository
+### Clone Repository
 
 ```bash
 git clone https://github.com/kanezadelphine/SheCanCode-associate-Assessment-.git
@@ -226,87 +215,139 @@ cd SHECANCODE-ASSOCIATE-ASSESSMENT-
 
 ---
 
-## Create Virtual Environment
+## ▶️ Run the Application
 
 ### Windows
 
 ```powershell
-python -m venv venv
+.\mvnw.cmd clean spring-boot:run
+```
 
-venv\Scripts\Activate.ps1
+### Linux / macOS
+
+```bash
+./mvnw clean spring-boot:run
 ```
 
 ---
 
-## Install Dependencies
+## 🌐 Server
 
-```bash
-pip install -r requirements.txt
-```
-
----
-
-## Run Migrations
-
-```bash
-python manage.py makemigrations
-
-python manage.py migrate
-```
-
----
-
-## Start Development Server
-
-```bash
-python manage.py runserver
-```
-
-Server runs at:
+Application runs at:
 
 ```text
-http://127.0.0.1:8000/
+http://localhost:8080/
 ```
 
 ---
 
-# Testing
+## 🧪 Testing with Thunder Client
 
-The API was tested using:
+### Request
 
-- Thunder Client
-- Django REST Framework browser
-- Duplicate request simulations
-- Fraud protection scenarios
+#### Method
+
+```http
+POST
+```
+
+#### URL
+
+```http
+http://localhost:8080/process-payment
+```
+
+#### Headers
+
+| Key | Value |
+|---|---|
+| Idempotency-Key | abc123 |
+| Content-Type | application/json |
+
+#### Body
+
+```json
+{
+    "amount": 100,
+    "currency": "USD"
+}
+```
 
 ---
 
-# Example Test Cases
+## 🧾 Testing Scenarios
 
-## First Payment
+### ✅ First Payment
 
-- New key
+- New idempotency key
 - Payment processed successfully
 
+#### Returns
+
+```json
+{
+    "message": "Charged 100 USD"
+}
+```
+
 ---
 
-## Duplicate Payment
+### ♻️ Duplicate Payment
 
 - Same key
 - Same body
 - Cached response returned instantly
 
+#### Response Includes
+
+```http
+X-Cache-Hit: true
+```
+
 ---
 
-## Fraud Attempt
+### 🚨 Fraud Attempt
 
 - Same key
 - Different body
-- Request rejected with `409 Conflict`
+- Request rejected
+
+#### Response
+
+```json
+{
+    "message": "Idempotency key already used for a different request body."
+}
+```
+
+#### Status
+
+```http
+409 Conflict
+```
 
 ---
 
-# Future Improvements
+## 💻 Example PowerShell Test
+
+```powershell
+$headers = @{
+    "Idempotency-Key" = "abc456"
+    "Content-Type" = "application/json"
+}
+
+$body = '{"amount":100,"currency":"USD"}'
+
+Invoke-RestMethod `
+    -Uri "http://localhost:8080/process-payment" `
+    -Method POST `
+    -Headers $headers `
+    -Body $body
+```
+
+---
+
+## 🚀 Future Improvements
 
 - Redis caching for production-scale performance
 - PostgreSQL integration
@@ -314,18 +355,23 @@ The API was tested using:
 - Docker containerization
 - Rate limiting
 - Asynchronous task queues
+- Distributed locking for microservices
 
 ---
 
-# Author
+## 👩‍💻 Author
 
-## KANEZA Delphine
+### KANEZA Delphine
 
-Software Engineering Student & Backend Developer
+Software Engineering  & Backend Developer
 
 ### GitHub
 
 https://github.com/kanezadelphine
+
+### Repository
+
+https://github.com/kanezadelphine/SheCanCode-associate-Assessment-
 
 ### Email
 
