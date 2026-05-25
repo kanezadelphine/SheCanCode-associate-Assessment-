@@ -24,6 +24,9 @@ This project simulates a fintech payment gateway where clients may retry request
 <p align="center">
   <img src="docs/architecture.png" width="900">
 </p>
+<p align="center">
+  <img src="docs/architecture1.png" width="900">
+</p>
 
 <p align="center">
   Architecture diagram for the Idempotency Gateway Payment API.
