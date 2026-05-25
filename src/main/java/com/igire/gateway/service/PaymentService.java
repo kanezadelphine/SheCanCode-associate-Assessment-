@@ -3,34 +3,39 @@ package com.igire.gateway.service;
 import com.igire.gateway.model.CachedPayment;
 import com.igire.gateway.model.PaymentRequest;
 import com.igire.gateway.model.PaymentResponse;
+import com.igire.gateway.repository.PaymentRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Optional;
 
 @Service
 public class PaymentService {
 
-    // Thread-safe memory storage
-    private final ConcurrentHashMap<String, CachedPayment> paymentStore = new ConcurrentHashMap<>();
+    private final PaymentRepository paymentRepository;
 
+    public PaymentService(PaymentRepository paymentRepository) {
+        this.paymentRepository = paymentRepository;
+    }
 
-    public ResponseEntity<?> processPayment(String idempotencyKey, PaymentRequest request)
-            throws Exception {
+    public ResponseEntity<?> processPayment(
+            String idempotencyKey,
+            PaymentRequest request
+    ) throws Exception {
 
-        // Create hash from request body
         String requestHash = hashRequest(request);
 
-        // Check if key already exists
-        if (paymentStore.containsKey(idempotencyKey)) {
+        Optional<CachedPayment> existingPaymentOptional =
+                paymentRepository.findById(idempotencyKey);
 
-            CachedPayment existingPayment = paymentStore.get(idempotencyKey);
+        if (existingPaymentOptional.isPresent()) {
 
-            // Fraud protection:
-            // Same key but different request body
+            CachedPayment existingPayment =
+                    existingPaymentOptional.get();
+
             if (!existingPayment.getRequestHash().equals(requestHash)) {
 
                 return ResponseEntity
@@ -40,52 +45,58 @@ public class PaymentService {
                         ));
             }
 
-            // In-flight handling
             while (existingPayment.isProcessing()) {
                 Thread.sleep(200);
+
+                existingPayment =
+                        paymentRepository.findById(idempotencyKey).get();
             }
 
-            // Return cached response
             return ResponseEntity
                     .status(existingPayment.getStatusCode())
                     .header("X-Cache-Hit", "true")
-                    .body(existingPayment.getResponse());
+                    .body(new PaymentResponse(
+                            existingPayment.getResponseMessage()
+                    ));
         }
 
-        // First request
-        CachedPayment cachedPayment = new CachedPayment(requestHash);
+        CachedPayment cachedPayment =
+                new CachedPayment(idempotencyKey, requestHash);
 
-        paymentStore.put(idempotencyKey, cachedPayment);
+        paymentRepository.save(cachedPayment);
 
-        // Simulate payment processing delay
         Thread.sleep(2000);
 
-        // Create response
-        PaymentResponse response = new PaymentResponse(
-                "Charged " + request.getAmount() + " " + request.getCurrency()
-        );
+        String message =
+                "Charged "
+                        + request.getAmount()
+                        + " "
+                        + request.getCurrency();
 
-        // Save response
-        cachedPayment.setResponse(response);
+        cachedPayment.setResponseMessage(message);
         cachedPayment.setStatusCode(201);
         cachedPayment.setProcessing(false);
 
+        paymentRepository.save(cachedPayment);
+
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(response);
+                .body(new PaymentResponse(message));
     }
 
+    private String hashRequest(PaymentRequest request)
+            throws Exception {
 
-    // SHA-256 request hashing
-    private String hashRequest(PaymentRequest request) throws Exception {
+        String rawData =
+                request.getAmount() + request.getCurrency();
 
-        String rawData = request.getAmount() + request.getCurrency();
+        MessageDigest digest =
+                MessageDigest.getInstance("SHA-256");
 
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
-
-        byte[] hashBytes = digest.digest(
-                rawData.getBytes(StandardCharsets.UTF_8)
-        );
+        byte[] hashBytes =
+                digest.digest(
+                        rawData.getBytes(StandardCharsets.UTF_8)
+                );
 
         StringBuilder hexString = new StringBuilder();
 

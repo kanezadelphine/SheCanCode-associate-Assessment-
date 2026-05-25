@@ -1,27 +1,53 @@
 package com.igire.gateway.model;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+
+@Entity
 public class CachedPayment {
 
+    @Id
+    private String idempotencyKey;
+
     private String requestHash;
-    private PaymentResponse response;
+
+    private String responseMessage;
+
     private int statusCode;
+
     private boolean processing;
 
-    public CachedPayment(String requestHash) {
+    public CachedPayment() {
+    }
+
+    public CachedPayment(String idempotencyKey, String requestHash) {
+        this.idempotencyKey = idempotencyKey;
         this.requestHash = requestHash;
         this.processing = true;
+    }
+
+    public String getIdempotencyKey() {
+        return idempotencyKey;
+    }
+
+    public void setIdempotencyKey(String idempotencyKey) {
+        this.idempotencyKey = idempotencyKey;
     }
 
     public String getRequestHash() {
         return requestHash;
     }
 
-    public PaymentResponse getResponse() {
-        return response;
+    public void setRequestHash(String requestHash) {
+        this.requestHash = requestHash;
     }
 
-    public void setResponse(PaymentResponse response) {
-        this.response = response;
+    public String getResponseMessage() {
+        return responseMessage;
+    }
+
+    public void setResponseMessage(String responseMessage) {
+        this.responseMessage = responseMessage;
     }
 
     public int getStatusCode() {
