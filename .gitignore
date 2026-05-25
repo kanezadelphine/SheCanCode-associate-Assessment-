@@ -1,16 +1,5 @@
-# Python cache
-__pycache__/
-*.py[cod]
-
-# Virtual environment
-venv/
-env/
-
-# SQLite database
-db.sqlite3
-
-# VS Code settings
+target/
+.idea/
+*.iml
 .vscode/
-
-# Environment variables
-.env
+.DS_Store
